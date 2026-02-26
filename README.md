@@ -16,3 +16,4 @@ A centralized intelligence dashboard.
 
 ## Status
 Early Architecture Phase.
+Initial architecture added.
