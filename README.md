@@ -1,14 +1,14 @@
-# LeaderOS
+## Tech Stack
 
-LeaderOS is a decision operating system designed for leaders and founders.
+Frontend:
+- HTML Dashboard UI
 
-## Features
-- Decision Tracking
-- Execution Monitoring
-- Dashboard Analytics
+Backend:
+- FastAPI (Python)
 
-## Run Locally
+Architecture:
+Frontend → API → Decision Engine
 
-pip install -r requirements.txt
+## Product Preview
 
-uvicorn main:app --reload
+LeaderOS provides execution intelligence for leaders.
