@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>LeaderOS Dashboard</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+margin:40px;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+margin:10px;
+border-radius:10px;
+display:inline-block;
+width:200px;
+}
+
+h1{
+color:#38bdf8;
+}
+
+button{
+padding:10px;
+background:#38bdf8;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>LeaderOS Dashboard 🚀</h1>
+
+<div class="card">
+<h3>Total Decisions</h3>
+<p id="total">0</p>
+</div>
+
+<div class="card">
+<h3>Completed</h3>
+<p id="completed">0</p>
+</div>
+
+<div class="card">
+<h3>Execution Score</h3>
+<p id="score">0%</p>
+</div>
+
+<br><br>
+
+<button onclick="loadDashboard()">Refresh Dashboard</button>
+
+<script>
+
+async function loadDashboard(){
+
+let response = await fetch(
+"http://127.0.0.1:8000/dashboard"
+);
+
+let data = await response.json();
+
+document.getElementById("total").innerText =
+data.total_decisions;
+
+document.getElementById("completed").innerText =
+data.completed;
+
+document.getElementById("score").innerText =
+data.execution_score + "%";
+
+}
+
+loadDashboard()
+
+</script>
+
+</body>
+</html>
