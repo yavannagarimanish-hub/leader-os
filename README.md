@@ -17,3 +17,5 @@ A centralized intelligence dashboard.
 ## Status
 Early Architecture Phase.
 Initial architecture added.
+![Status](https://img.shields.io/badge/status-building-green)
+![License](https://img.shields.io/badge/license-MIT-blue)
