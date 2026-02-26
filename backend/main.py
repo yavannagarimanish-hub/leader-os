@@ -1,86 +1,53 @@
-from fastapi import FastAPI
+"""LeaderOS FastAPI entrypoint."""
 
-app = FastAPI(title="LeaderOS")
+from fastapi import FastAPI, Response, status
 
-# In-memory storage (MVP)
-decisions = []
+from backend.leaderos.models import DashboardMetrics, Decision, DecisionCreate, DecisionUpdate
+from backend.leaderos.repository import DecisionRepository
+from backend.leaderos.service import DecisionService
 
+app = FastAPI(
+    title="LeaderOS",
+    version="1.0.0",
+    description="Execution intelligence API for leadership decision tracking.",
+)
 
-@app.get("/")
-def home():
-    return {
-        "product": "LeaderOS",
-        "status": "running"
-    }
-
-
-# Create Decision
-@app.post("/decision")
-def create_decision(title: str, description: str):
-
-    decision = {
-        "id": len(decisions) + 1,
-        "title": title,
-        "description": description,
-        "status": "pending"
-    }
-
-    decisions.append(decision)
-
-    return decision
+repository = DecisionRepository()
+service = DecisionService(repository)
 
 
-# Get All Decisions
-@app.get("/decisions")
-def get_decisions():
-    return decisions
+@app.get("/", tags=["health"])
+def home() -> dict[str, str]:
+    """Liveness endpoint for operational checks."""
+    return {"product": "LeaderOS", "status": "running"}
 
 
-# Update Decision Status
-@app.put("/decision/{decision_id}")
-def update_decision(decision_id: int, status: str):
-
-    for decision in decisions:
-        if decision["id"] == decision_id:
-            decision["status"] = status
-            return decision
-
-    return {"error": "Decision not found"}
+@app.post("/decision", response_model=Decision, status_code=status.HTTP_201_CREATED, tags=["decisions"])
+def create_decision(payload: DecisionCreate) -> Decision:
+    """Create a new decision with validated input."""
+    return service.create_decision(payload)
 
 
-# Delete Decision
-@app.delete("/decision/{decision_id}")
-def delete_decision(decision_id: int):
-
-    global decisions
-
-    decisions = [
-        d for d in decisions if d["id"] != decision_id
-    ]
-
-    return {"message": "Decision deleted"}
+@app.get("/decisions", response_model=list[Decision], tags=["decisions"])
+def get_decisions() -> list[Decision]:
+    """List all decisions sorted by ID."""
+    return service.list_decisions()
 
 
-# Dashboard Analytics
-@app.get("/dashboard")
-def dashboard():
+@app.put("/decision/{decision_id}", response_model=Decision, tags=["decisions"])
+def update_decision(decision_id: int, payload: DecisionUpdate) -> Decision:
+    """Update only mutable fields for a decision."""
+    return service.update_status(decision_id=decision_id, status_value=payload.status)
 
-    total = len(decisions)
 
-    completed = len(
-        [d for d in decisions if d["status"] == "completed"]
-    )
+@app.delete("/decision/{decision_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["decisions"])
+def delete_decision(decision_id: int) -> Response:
+    """Delete a decision resource by ID."""
+    service.delete_decision(decision_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    pending = total - completed
 
-    execution_score = 0
-
-    if total > 0:
-        execution_score = (completed / total) * 100
-
-    return {
-        "total_decisions": total,
-        "completed": completed,
-        "pending": pending,
-        "execution_score": execution_score
-    }
+@app.get("/dashboard", response_model=DashboardMetrics, tags=["analytics"])
+def dashboard() -> DashboardMetrics:
+    """Return aggregate execution metrics."""
+    return service.dashboard()
